@@ -33,20 +33,24 @@ dependencies:
    
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
-  google_maps_flutter: ^2.10.0 # Google Maps integration
-  geolocator: ^13.0.2  # Get user's current location
+  google_maps_flutter: ^2.12.0 # Google Maps integration
+  geolocator: ^13.0.3  # Get user's current location
   geocoding: ^3.0.0
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
-  http: ^0.13.0
+  http: ^1.1.0
   flutter_typeahead: ^5.2.0
-  google_place: ^0.4.7
+  flutter_google_places_sdk: ^0.4.0
   firebase_core_dart: ^1.0.1
   firebase_storage_mocks: ^0.7.0
   cloud_firestore_odm: ^1.0.0-dev.88
   image_picker: ^1.1.2
+  firebase_auth: ^5.5.1
+  firebase_ui_auth: ^1.16.1
   animated_text_kit: ^4.2.3
+  shared_preferences: ^2.5.3
+  video_player: ^2.8.2
 
 dev_dependencies:
   flutter_test:
@@ -72,9 +76,10 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
-  #   - images/a_dot_ham.jpeg
+  assets:
+    - assets/welcome_bg.jpg
+    - assets/map_style.json
+    - assets/places_data.json
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

@@ -1,0 +1,27 @@
+{
+    "visited": [
+      {
+        "name": "Jodhpur",
+        "lat": 26.2389,
+        "lng": 73.0243
+      },
+      {
+        "name": "Jaipur",
+        "lat": 26.9124,
+        "lng": 75.7873
+      }
+    ],
+    "upcoming": [
+      {
+        "name": "Udaipur",
+        "lat": 24.5854,
+        "lng": 73.7125
+      },
+      {
+        "name": "Taj Mahal",
+        "lat": 27.1751,
+        "lng": 78.0421
+      }
+    ]
+  }
+  
