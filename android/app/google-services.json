@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "161455724595",
+    "project_id": "triptales-c73ce",
+    "storage_bucket": "triptales-c73ce.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:161455724595:android:a9238d074020cad64d6b46",
+        "android_client_info": {
+          "package_name": "com.example.triptale"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAf7ib9K41i_9uuGOt8tymW8g0CwM5KIYc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
