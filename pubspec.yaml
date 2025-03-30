@@ -46,7 +46,7 @@ dependencies:
   firebase_storage_mocks: ^0.7.0
   cloud_firestore_odm: ^1.0.0-dev.88
   image_picker: ^1.1.2
-  
+  animated_text_kit: ^4.2.3
 
 dev_dependencies:
   flutter_test:
