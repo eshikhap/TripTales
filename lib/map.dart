@@ -26,7 +26,7 @@ class _PlacesSearchScreenState extends State<PlacesSearchScreen> {
   LatLng? _selectedLocation;
   Set<Marker> _markers = {};
   static const String apiKey =
-      "AIzaSyCOr_KyM48c7Uu_2Pk21yXdItisrZbCR10"; // Store securely
+      "API KEY"; // Store securely
 
   List<dynamic> visitedPlaces = [];
   List<dynamic> upcomingPlaces = [];
