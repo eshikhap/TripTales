@@ -2,16 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'auth_gate.dart';
-import 'map.dart'; // Import MapPage
+import 'map.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
+
   @override
   _HomePageState createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
+  final PageController _pageController = PageController(); // Fixed missing PageController
   final PageController _trendingPageController = PageController(viewportFraction: 0.85);
   final PageController _savedPageController = PageController(viewportFraction: 0.85);
 
@@ -19,48 +21,90 @@ class _HomePageState extends State<HomePage> {
     {"title": "Bali", "image": "assets/bali.jpg"},
     {"title": "Paris", "image": "assets/paris.jpg"},
     {"title": "Tokyo", "image": "assets/tokyo.jpg"},
+    {"title": "Japan", "image": "assets/japan.jpg"},  // Fixed duplicate names
+    {"title": "Delhi", "image": "assets/delhi.jpg"},
   ];
 
   final List<Map<String, String>> savedPlaces = [
     {"title": "London", "image": "assets/london.jpg"},
     {"title": "New York", "image": "assets/newyork.jpg"},
     {"title": "Sydney", "image": "assets/sydney.jpg"},
+    {"title": "Tokyo", "image": "assets/tokyo.jpg"},
+    {"title": "Japan", "image": "assets/japan.jpg"},
   ];
-
-  final List<Widget> _pages = [];
-
-  @override
-  void initState() {
-    super.initState();
-    _pages.addAll([
-      _buildHomeContent(),
-      Center(child: Text("Feature Coming Soon")),
-      Center(child: Text("Feature Coming Soon")),
-      Center(child: Text("Feature Coming Soon")),
-      _buildProfileSection(),
-    ]);
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _pages[_selectedIndex],
+      drawer: _buildProfileDrawer(),
+      body: Stack(
+        children: [
+          PageView(
+            controller: _pageController,
+            onPageChanged: (index) {
+              setState(() {
+                _selectedIndex = index;
+              });
+            },
+            children: [
+              _buildHomeContent(),
+              MapPage(),
+              Center(child: Text("Plan a Trip Page Coming Soon")),
+              Center(child: Text("Document a Trip Page Coming Soon")),
+              Center(child: Text("Your Trip Page Coming Soon")),
+            ],
+          ),
+        ],
+      ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         currentIndex: _selectedIndex,
         onTap: (index) {
-          if (index == 0) {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => MapPage()));
-          } else {
-            setState(() => _selectedIndex = index);
-          }
+          _pageController.jumpToPage(index);
         },
         items: [
-          BottomNavigationBarItem(icon: Icon(Icons.map), label: ""),
-          BottomNavigationBarItem(icon: Icon(Icons.travel_explore), label: ""),
-          BottomNavigationBarItem(icon: Icon(Icons.add_circle), label: ""),
-          BottomNavigationBarItem(icon: Icon(Icons.description), label: ""),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: ""),
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
+          BottomNavigationBarItem(icon: Icon(Icons.map), label: "Maps"),
+          BottomNavigationBarItem(icon: Icon(Icons.flight_takeoff), label: "Plan a Trip"),
+          BottomNavigationBarItem(icon: Icon(Icons.article), label: "Document a Trip"),
+          BottomNavigationBarItem(icon: Icon(Icons.card_travel), label: "Your Trip"),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProfileDrawer() {
+    final user = FirebaseAuth.instance.currentUser;
+
+    return Drawer(
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          UserAccountsDrawerHeader(
+            accountName: Text(user?.displayName ?? "Guest User"),
+            accountEmail: Text(user?.email ?? "No email available"),
+            currentAccountPicture: CircleAvatar(
+              backgroundImage: user?.photoURL != null
+                  ? NetworkImage(user!.photoURL!)
+                  : AssetImage("assets/profile_placeholder.png") as ImageProvider,
+            ),
+            decoration: BoxDecoration(color: Colors.blueAccent),
+          ),
+          ListTile(
+            leading: Icon(Icons.settings),
+            title: Text("Settings"),
+            onTap: () {
+              Navigator.pop(context);
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.logout, color: Colors.red),
+            title: Text("Sign Out", style: TextStyle(color: Colors.red)),
+            onTap: () async {
+              await FirebaseAuth.instance.signOut();
+              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => AuthGate()));
+            },
+          ),
         ],
       ),
     );
@@ -87,53 +131,11 @@ class _HomePageState extends State<HomePage> {
               SizedBox(height: 20),
               _buildSection("Top Picks for You"),
               _buildSlidingPlaces(trendingPlaces, _trendingPageController),
-              SizedBox(height: 20),
-              _buildSection("Your Saved Places"),
+              _buildSection("Your saved Places"),
               _buildSlidingPlaces(savedPlaces, _savedPageController),
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildProfileSection() {
-    final user = FirebaseAuth.instance.currentUser;
-
-    return Container(
-      padding: EdgeInsets.all(20),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          CircleAvatar(
-            radius: 40,
-            backgroundImage: user?.photoURL != null
-                ? NetworkImage(user!.photoURL!)
-                : AssetImage("assets/profile_placeholder.png") as ImageProvider,
-          ),
-          SizedBox(height: 10),
-          Text(
-            user?.displayName ?? "Guest User",
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-          ),
-          SizedBox(height: 5),
-          Text(user?.email ?? "No email available"),
-          SizedBox(height: 20),
-          ElevatedButton(
-            onPressed: () async {
-              await FirebaseAuth.instance.signOut();
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => AuthGate()),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.redAccent,
-              padding: EdgeInsets.symmetric(horizontal: 40, vertical: 12),
-            ),
-            child: Text("Sign Out", style: TextStyle(fontSize: 18)),
-          ),
-        ],
       ),
     );
   }
@@ -143,7 +145,7 @@ class _HomePageState extends State<HomePage> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
-          "Hello, User",
+          "Hello, Traveler",
           style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
         ),
         IconButton(
@@ -172,9 +174,12 @@ class _HomePageState extends State<HomePage> {
                 '“Travel is the only thing you buy that makes you richer.”',
                 speed: Duration(milliseconds: 100),
               ),
+              TypewriterAnimatedText(
+                '“Adventure awaits, go find it.”',
+                speed: Duration(milliseconds: 100),
+              ),
             ],
-            repeatForever: false,
-            totalRepeatCount: 1,
+            repeatForever: true,
           ),
         ),
       ),
@@ -198,59 +203,45 @@ class _HomePageState extends State<HomePage> {
         controller: controller,
         itemCount: places.length,
         itemBuilder: (context, index) {
-          return _buildPlaceCard(places, index, controller);
+          return _buildPlaceCard(places, index);
         },
       ),
     );
   }
 
-  Widget _buildPlaceCard(List<Map<String, String>> places, int index, PageController controller) {
-    return AnimatedBuilder(
-      animation: controller,
-      builder: (context, child) {
-        double scale = 1.0;
-        if (controller.position.haveDimensions) {
-          double pageOffset = controller.page! - index;
-          scale = (1 - (pageOffset.abs() * 0.3)).clamp(0.8, 1.0);
-        }
-
-        return Transform.scale(
-          scale: scale,
-          child: Container(
-            margin: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(15),
-              image: DecorationImage(
-                image: AssetImage(places[index]["image"]!),
-                fit: BoxFit.cover,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.3),
-                  blurRadius: 5,
-                  spreadRadius: 2,
-                  offset: Offset(2, 4),
-                ),
-              ],
-            ),
-            child: Align(
-              alignment: Alignment.bottomLeft,
-              child: Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Text(
-                  places[index]["title"]!,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 20,
-                    backgroundColor: Colors.black45,
-                  ),
-                ),
-              ),
+  Widget _buildPlaceCard(List<Map<String, String>> places, int index) {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(15),
+        image: DecorationImage(
+          image: AssetImage(places[index]["image"]!),
+          fit: BoxFit.cover,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.3),
+            blurRadius: 5,
+            spreadRadius: 2,
+            offset: Offset(2, 4),
+          ),
+        ],
+      ),
+      child: Align(
+        alignment: Alignment.bottomLeft,
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Text(
+            places[index]["title"]!,
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 20,
+              backgroundColor: Colors.black45,
             ),
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 }
