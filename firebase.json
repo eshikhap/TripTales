@@ -1,1 +1,79 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"triptales-c73ce","appId":"1:161455724595:android:a9238d074020cad64d6b46","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"triptales-c73ce","configurations":{"android":"1:161455724595:android:a9238d074020cad64d6b46","ios":"1:161455724595:ios:057ecab314dd85424d6b46","macos":"1:161455724595:ios:057ecab314dd85424d6b46","web":"1:161455724595:web:bf26aba69a9df9474d6b46","windows":"1:161455724595:web:1bc84e167e10e6324d6b46"}}}}}}
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "triptales-c73ce",
+          "appId": "1:161455724595:android:a9238d074020cad64d6b46",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "triptales-c73ce",
+          "configurations": {
+            "android": "1:161455724595:android:a9238d074020cad64d6b46",
+            "ios": "1:161455724595:ios:057ecab314dd85424d6b46",
+            "macos": "1:161455724595:ios:057ecab314dd85424d6b46",
+            "web": "1:161455724595:web:bf26aba69a9df9474d6b46",
+            "windows": "1:161455724595:web:1bc84e167e10e6324d6b46"
+          }
+        }
+      }
+    }
+  },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ],
+      "predeploy": [
+        "npm --prefix \"$RESOURCE_DIR\" run lint"
+      ]
+    }
+  ],
+  "emulators": {
+    "functions": {
+      "port": 5001
+    },
+    "ui": {
+      "enabled": false
+    },
+    "singleProjectMode": true,
+    "dataconnect": {
+      "dataDir": "dataconnect/.dataconnect/pgliteData",
+      "port": 9399
+    },
+    "auth": {
+      "port": 9099
+    },
+    "firestore": {
+      "port": 8080
+    },
+    "database": {
+      "port": 9000
+    },
+    "storage": {
+      "port": 9199
+    },
+    "tasks": {
+      "port": 9499
+    }
+  },
+  "dataconnect": {
+    "source": "dataconnect"
+  },
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "storage": {
+    "rules": "storage.rules"
+  }
+}
