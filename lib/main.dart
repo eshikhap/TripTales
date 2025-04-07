@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -6,10 +7,11 @@ import 'firebase_options.dart';
 import 'welcome_page.dart';
 import 'home_page.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
+    await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   ); 
   await FirebaseAppCheck.instance.activate(
@@ -22,6 +24,7 @@ void main() async {
 
   runApp(MyApp(isFirstLaunch: isFirstLaunch));
 }
+
 
 class MyApp extends StatelessWidget {
   final bool isFirstLaunch;

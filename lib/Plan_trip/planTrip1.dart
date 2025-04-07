@@ -3,25 +3,36 @@ import 'planTrip2.dart';
 import 'box.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:uuid/uuid.dart';
 
 class plantrip1 extends StatelessWidget {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+ final FirebaseAuth _auth = FirebaseAuth.instance;
 
   // Function to store trip selection in Firestore and save Trip ID locally
-  Future<void> _storeTripSelection(String tripType) async {
-    DocumentReference tripRef = await _firestore.collection('trips').add({
-      'tripType': tripType,
-      'timestamp': FieldValue.serverTimestamp(),
-    });
+ Future<void> _storeTripSelection(String tripType) async {
+  // Create a new document reference
+  DocumentReference tripRef = _firestore.collection('trips').doc();
+  String userId = _auth.currentUser?.uid ?? "";
+  String tripId = tripRef.id; // Get the generated document ID
 
-    String tripId = tripRef.id; // Get Firestore document ID
+  // Set all data in the same document
+  await tripRef.set({
+    'tripId': tripId,
+    'tripType': tripType,
+    'creator': userId,
+     'members': [userId],
+    'timestamp': FieldValue.serverTimestamp(),
+  });
 
-    // Save Trip ID locally
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('tripId', tripId);
+  // Save Trip ID locally
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.setString('tripId', tripId);
 
-    print("Trip stored with ID: $tripId");
-  }
+  print("Trip stored with ID: $tripId");
+}
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
