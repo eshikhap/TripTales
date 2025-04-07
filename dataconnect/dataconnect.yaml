@@ -1,0 +1,12 @@
+specVersion: "v1"
+serviceId: "TripTales"
+location: "asia-southeast1"
+schema:
+  source: "./schema"
+  datasource:
+    postgresql:
+      database: "fdcdb"
+      cloudSql:
+        instanceId: "triptales-fdc"
+      # schemaValidation: "COMPATIBLE"
+connectorDirs: ["./connector"]
