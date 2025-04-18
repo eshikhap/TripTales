@@ -9,7 +9,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
 import 'package:video_player/video_player.dart';
 import 'trip_info.dart';
-
 class TripChatPage extends StatefulWidget {
   final String tripId;
 

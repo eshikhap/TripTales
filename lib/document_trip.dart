@@ -2,16 +2,12 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_html_to_pdf/flutter_html_to_pdf.dart';
-import 'package:share_plus/share_plus.dart';
-import 'package:printing/printing.dart';
 import 'package:open_filex/open_filex.dart';
-import 'package:pdf/pdf.dart';
 import 'package:webview_flutter/webview_flutter.dart';
-import 'main.dart';
+import 'package:pdf/pdf.dart';
+import 'package:printing/printing.dart';
 
 String safeUrl(String url) {
   return url.replaceFirst("http://", "https://");
@@ -98,7 +94,6 @@ Future<String> fetchChatHtmlGrouped(String tripId) async {
       max-width: 400px;
       border-radius: 10px;
       box-shadow: 5px 5px 15px rgba(0,0,0,0.1);
-      transform: rotate(${[-2, 2, -3, 3][DateTime.now().millisecondsSinceEpoch % 4]}deg);
     }
 
     .polaroid img {
@@ -174,59 +169,39 @@ Future<String> fetchChatHtmlGrouped(String tripId) async {
     rethrow;
   }
 }
-
-Future<String> convertHtmlToPdfAndSave(
-  String htmlContent,
-  String tripId,
-) async {
+Future<String> convertHtmlToPdfAndSave(String htmlContent, String tripId) async {
   try {
     print("[convertHtmlToPdfAndSave] Starting PDF conversion...");
-    final pdfBytes = await Printing.convertHtml(
-      format: PdfPageFormat.a4,
-      html: htmlContent,
+
+    final outputDir = await getTemporaryDirectory();
+    final file = await FlutterHtmlToPdf.convertFromHtmlContent(
+      htmlContent,
+      outputDir.path,
+      "trip_album_$tripId",
     );
-    final output = await getApplicationDocumentsDirectory();
-    final filePath = "${output.path}/trip_album_$tripId.pdf";
-    final file = File(filePath);
-    await file.writeAsBytes(pdfBytes);
-    print("[convertHtmlToPdfAndSave] PDF saved at: $filePath");
-    return filePath;
+
+    print("[convertHtmlToPdfAndSave] PDF saved at: ${file.path}");
+    return file.path;
   } catch (e, stackTrace) {
     print("[convertHtmlToPdfAndSave] PDF generation failed: $e");
     print(stackTrace);
     rethrow;
   }
 }
-Future<void> generateAndShareTripAlbum(
-  BuildContext context,
-  String tripId,
-) async {
+
+
+Future<void> generateAndShareTripAlbum(BuildContext context, String tripId) async {
   try {
     print("[generateAndShareTripAlbum] Starting for tripId: $tripId");
 
     final htmlContent = await fetchChatHtmlGrouped(tripId);
 
-    // ✅ Use global navigatorKey to safely access context
-    final safeContext = navigatorKey.currentContext!;
     Navigator.push(
-      safeContext,
+      context,
       MaterialPageRoute(
         builder: (context) => AlbumPreview(html: htmlContent, tripId: tripId),
       ),
     );
-
-    // ✅ Use flutter_html_to_pdf instead of printing
-    final outputDir = await getTemporaryDirectory();
-    final pdfFile = await FlutterHtmlToPdf.convertFromHtmlContent(
-      htmlContent,
-      outputDir.path,
-      "trip_album_$tripId",
-    );
-
-    print("✅ PDF generated at: ${pdfFile.path}");
-
-    // Open the PDF
-    await OpenFilex.open(pdfFile.path);
   } catch (e, stackTrace) {
     print("[generateAndShareTripAlbum] Error: $e");
     print(stackTrace);
@@ -235,21 +210,20 @@ Future<void> generateAndShareTripAlbum(
 
 class AlbumPreview extends StatelessWidget {
   final String html;
-  final String tripId; // 👈 Add this
+  final String tripId;
 
   const AlbumPreview({
-    super.key,
+    Key? key,
     required this.html,
     required this.tripId,
-  }); // 👈 Include tripId
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final contentBase64 = base64Encode(const Utf8Encoder().convert(html));
-    final controller =
-        WebViewController()
-          ..setJavaScriptMode(JavaScriptMode.unrestricted)
-          ..loadRequest(Uri.parse('data:text/html;base64,$contentBase64'));
+    final controller = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..loadRequest(Uri.parse('data:text/html;base64,$contentBase64'));
 
     return Scaffold(
       appBar: AppBar(
@@ -260,10 +234,7 @@ class AlbumPreview extends StatelessWidget {
             tooltip: 'Download PDF',
             onPressed: () async {
               try {
-                final pdfPath = await convertHtmlToPdfAndSave(
-                  html,
-                  tripId,
-                ); // ✅ tripId used
+                final pdfPath = await convertHtmlToPdfAndSave(html, tripId);
                 await OpenFilex.open(pdfPath);
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text('PDF saved at $pdfPath')),

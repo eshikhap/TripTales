@@ -161,15 +161,18 @@ class YourTripsPage extends StatelessWidget {
               child: Text("Open Chat"),
             ),
             TextButton(
-              onPressed: () {
-                final safeContext = context;
-                Navigator.pop(context);
-                Future.delayed(Duration(milliseconds: 300), () {
-                  generateAndShareTripAlbum(safeContext, tripId);
-                });
-              },
-              child: Text("Generate Album"),
-            ),
+  onPressed: () {
+    Navigator.pop(context); // pop the dialog
+    // Delay ensures dialog is closed before navigating
+    Future.microtask(() {
+      generateAndShareTripAlbum(
+        Navigator.of(context).overlay!.context, // ✅ this ensures a valid context from widget tree
+        tripId,
+      );
+    });
+  },
+  child: Text("Generate Album"),
+),
           ],
         );
       },
