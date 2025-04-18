@@ -32,36 +32,111 @@ class YourTripsPage extends StatelessWidget {
               return const Center(child: Text("No trips found."));
             }
 
-            final trips = snapshot.data!.docs;
+            final now = DateTime.now();
+            final ongoing = <QueryDocumentSnapshot>[];
+            final upcoming = <QueryDocumentSnapshot>[];
+            final completed = <QueryDocumentSnapshot>[];
 
-            return ListView.builder(
-              itemCount: trips.length,
-              itemBuilder: (context, index) {
-                var trip = trips[index];
-                String tripId = trip['tripId'];
-                String creator = trip['creator'] ?? 'Unknown';
+            for (var doc in snapshot.data!.docs) {
+              final tripDetails = doc['tripDetails'] as Map<String, dynamic>? ?? {};
+              final startStr = tripDetails['startDate'];
+              final endStr = tripDetails['endDate'];
 
-                // Safely extract trip name from nested map
-                Map<String, dynamic>? tripDetails = trip['tripDetails'];
-                String title = tripDetails?['Give a name to your trip'] ?? 'Unnamed Trip';
+              if (startStr == null || endStr == null) continue;
 
-                return Card(
-                  margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: ListTile(
-                    title: Text(title, style: TextStyle(fontWeight: FontWeight.bold)),
-                    subtitle: Text("Created by: $creator"),
-                    trailing: const Icon(Icons.more_vert),
-                    onTap: () => _showOptionsDialog(context, tripId),
-                  ),
-                );
-              },
+              try {
+                final start = DateTime.parse(startStr);
+                final end = DateTime.parse(endStr);
+
+                if (now.isBefore(start)) {
+                  upcoming.add(doc);
+                } else if (now.isAfter(end)) {
+                  completed.add(doc);
+                } else {
+                  ongoing.add(doc);
+                }
+              } catch (e) {
+                print("Date parse error in ${doc.id}: $e");
+              }
+            }
+
+            return ListView(
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              children: [
+                if (ongoing.isNotEmpty)
+                  _buildTripSection("Ongoing Trips", ongoing, context, Colors.green),
+                if (upcoming.isNotEmpty)
+                  _buildTripSection("Upcoming Trips", upcoming, context, Colors.blue),
+                if (completed.isNotEmpty)
+                  _buildTripSection("Completed Trips", completed, context, Colors.grey),
+              ],
             );
           },
         ),
       ),
+    );
+  }
+
+  Widget _buildTripSection(String title, List<QueryDocumentSnapshot> trips, BuildContext context, Color accentColor) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Text(
+            title,
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: accentColor),
+          ),
+        ),
+        ...trips.map((trip) {
+          final data = trip.data() as Map<String, dynamic>;
+          final tripDetails = data['tripDetails'] as Map<String, dynamic>? ?? {};
+          final tripId = data['tripId'] ?? '';
+          final creatorUid = data['creator'] ?? '';
+          final tripName = tripDetails['Give a name to your trip'] ?? 'Unnamed Trip';
+          final destination = tripDetails['Where are you traveling to?'] ?? 'Unknown';
+          final start = tripDetails['startDate'] ?? '';
+          final end = tripDetails['endDate'] ?? '';
+
+          return FutureBuilder<DocumentSnapshot>(
+            future: FirebaseFirestore.instance.collection('users').doc(creatorUid).get(),
+            builder: (context, userSnapshot) {
+              String creatorName = 'Loading...';
+              if (userSnapshot.hasData && userSnapshot.data!.exists) {
+                creatorName = userSnapshot.data!['name'] ?? 'Unknown';
+              } else if (userSnapshot.hasError) {
+                creatorName = 'Error loading name';
+              }
+
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                child: Material(
+                  elevation: 3,
+                  borderRadius: BorderRadius.circular(12),
+                  child: ListTile(
+                    contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    title: Text(tripName, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                    subtitle: Padding(
+                      padding: const EdgeInsets.only(top: 6),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text("Destination: $destination"),
+                          Text("Dates: $start → $end"),
+                          Text("Created by: $creatorName"),
+                        ],
+                      ),
+                    ),
+                    trailing: Icon(Icons.more_vert, color: accentColor),
+                    onTap: () => _showOptionsDialog(context, tripId),
+                  ),
+                ),
+              );
+            },
+          );
+        }).toList(),
+      ],
     );
   }
 
