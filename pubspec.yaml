@@ -98,7 +98,7 @@ flutter:
     - assets/welcome_bg.jpg
     - assets/map_style.json
     - assets/places_data.json
-
+    - assets/flutterfire_300x.jpg
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
 
