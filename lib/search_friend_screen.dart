@@ -5,7 +5,7 @@ import 'email_service.dart'; // Make sure the path is correct
 
 class SearchFriendsScreen extends StatefulWidget {
   final Map<String, dynamic> currentUser;
-  const SearchFriendsScreen({required this.currentUser});
+  const SearchFriendsScreen({super.key, required this.currentUser});
 
   @override
   State<SearchFriendsScreen> createState() => _SearchFriendsScreenState();
@@ -20,14 +20,14 @@ class _SearchFriendsScreenState extends State<SearchFriendsScreen> {
         await FirebaseFirestore.instance
             .collection('users')
             .where('name', isGreaterThanOrEqualTo: query)
-            .where('name', isLessThanOrEqualTo: query + '\uf8ff')
+            .where('name', isLessThanOrEqualTo: '$query\uf8ff')
             .get();
 
     setState(() {
       _results =
           result.docs
               .map(
-                (doc) => {'uid': doc.id, ...doc.data() as Map<String, dynamic>},
+                (doc) => {'uid': doc.id, ...doc.data()},
               )
               .where((user) => user['uid'] != widget.currentUser['uid'])
               .toList();

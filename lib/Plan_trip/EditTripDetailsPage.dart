@@ -3,6 +3,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class EditTripDetailsPage extends StatefulWidget {
+  const EditTripDetailsPage({super.key});
+
   @override
   _EditTripDetailsPageState createState() => _EditTripDetailsPageState();
 }

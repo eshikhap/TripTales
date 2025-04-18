@@ -502,7 +502,7 @@ class SearchFriendsScreen extends StatefulWidget {
   final Map<String, dynamic> currentUser;
   final String tripId;
 
-  const SearchFriendsScreen({
+  const SearchFriendsScreen({super.key, 
     required this.currentUser,
     required this.tripId,
   });
@@ -530,7 +530,7 @@ class _SearchFriendsScreenState extends State<SearchFriendsScreen> {
     if (emailQuery.docs.isNotEmpty) {
       setState(() {
         _results = emailQuery.docs
-            .map((doc) => {'uid': doc.id, ...doc.data() as Map<String, dynamic>})
+            .map((doc) => {'uid': doc.id, ...doc.data()})
             .where((user) => user['uid'] != widget.currentUser['uid'])
             .toList();
       });
@@ -541,12 +541,12 @@ class _SearchFriendsScreenState extends State<SearchFriendsScreen> {
     final nameQuery = await FirebaseFirestore.instance
         .collection('users')
         .where('name', isGreaterThanOrEqualTo: query)
-        .where('name', isLessThanOrEqualTo: query + '\uf8ff')
+        .where('name', isLessThanOrEqualTo: '$query\uf8ff')
         .get();
 
     setState(() {
       _results = nameQuery.docs
-          .map((doc) => {'uid': doc.id, ...doc.data() as Map<String, dynamic>})
+          .map((doc) => {'uid': doc.id, ...doc.data()})
           .where((user) => user['uid'] != widget.currentUser['uid'])
           .toList();
     });

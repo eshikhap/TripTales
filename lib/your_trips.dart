@@ -4,6 +4,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'trip_chat_page.dart';
 import 'document_trip.dart'; // Import your PDF generation function
 class YourTripsPage extends StatelessWidget {
+  const YourTripsPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     final String userId = FirebaseAuth.instance.currentUser?.uid ?? "";

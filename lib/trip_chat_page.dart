@@ -12,7 +12,7 @@ import 'trip_info.dart';
 class TripChatPage extends StatefulWidget {
   final String tripId;
 
-  const TripChatPage({Key? key, required this.tripId}) : super(key: key);
+  const TripChatPage({super.key, required this.tripId});
 
   @override
   _TripChatPageState createState() => _TripChatPageState();
@@ -289,7 +289,7 @@ class _TripChatPageState extends State<TripChatPage> {
 
 class VideoPlayerWidget extends StatefulWidget {
   final File file;
-  const VideoPlayerWidget({Key? key, required this.file}) : super(key: key);
+  const VideoPlayerWidget({super.key, required this.file});
 
   @override
   _VideoPlayerWidgetState createState() => _VideoPlayerWidgetState();

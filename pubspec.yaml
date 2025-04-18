@@ -36,6 +36,7 @@ dependencies:
   google_maps_flutter: ^2.12.0 # Google Maps integration
   geolocator: ^13.0.3  # Get user's current location
   geocoding: ^3.0.0
+  cloud_firestore: ^5.0.0
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
@@ -69,6 +70,7 @@ dependencies:
   flutter_html_to_pdf: ^0.7.0
   flutter_local_notifications: ^19.0.0
   permission_handler: ^11.4.0
+  url_launcher: ^6.3.1
   
 dev_dependencies:
   flutter_test:
@@ -98,6 +100,14 @@ flutter:
     - assets/welcome_bg.jpg
     - assets/map_style.json
     - assets/places_data.json
+    - assets/default_trip.jpg
+
+
+
+flutter_html_to_pdf:
+  git:
+    url: https://github.com/your-username/flutter_html_to_pdf.git
+    ref: main
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
