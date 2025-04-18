@@ -17,6 +17,8 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
 // ignore: unused_import
 import 'trip_chat_page.dart';
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -192,21 +194,21 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  Future<void> _initializeNotifications() async {
-    const AndroidInitializationSettings androidSettings =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
+Future<void> _initializeNotifications() async {
+  const AndroidInitializationSettings androidSettings =
+      AndroidInitializationSettings('@mipmap/ic_launcher');
 
-    const InitializationSettings settings = InitializationSettings(
-      android: androidSettings,
-    );
+  const InitializationSettings settings = InitializationSettings(
+    android: androidSettings,
+  );
 
-    await _notificationsPlugin.initialize(settings);
+  await flutterLocalNotificationsPlugin.initialize(settings);
 
-    // Android 13+ requires explicit permission
-    if (await Permission.notification.isDenied) {
-      await Permission.notification.request();
-    }
+  if (await Permission.notification.isDenied) {
+    await Permission.notification.request();
   }
+}
+
 
   Future<void> _checkTripsAndNotify() async {
     final user = FirebaseAuth.instance.currentUser;
@@ -253,25 +255,29 @@ class _HomePageState extends State<HomePage> {
       }
     }
   }
+Future<void> _showNotification({
+  required String title,
+  required String body,
+}) async {
+  const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+    'trip_channel',
+    'Trip Reminders',
+    channelDescription: 'Notifications about your trip plans',
+    importance: Importance.max,
+    priority: Priority.high,
+  );
 
-  Future<void> _showNotification({
-    required String title,
-    required String body,
-  }) async {
-    const AndroidNotificationDetails androidDetails =
-        AndroidNotificationDetails(
-          'trip_channel',
-          'Trip Reminders',
-          importance: Importance.max,
-          priority: Priority.high,
-        );
+  const NotificationDetails notificationDetails = NotificationDetails(
+    android: androidDetails,
+  );
 
-    const NotificationDetails notificationDetails = NotificationDetails(
-      android: androidDetails,
-    );
-
-    await _notificationsPlugin.show(0, title, body, notificationDetails);
-  }
+  await flutterLocalNotificationsPlugin.show(
+    0,
+    title,
+    body,
+    notificationDetails,
+  );
+}
 
   // @override
   // Widget build(BuildContext context) {
