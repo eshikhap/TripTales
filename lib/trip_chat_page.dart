@@ -8,7 +8,8 @@ import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
 import 'package:video_player/video_player.dart';
-import 'trip_info.dart';
+import 'Plan_trip/EditTripDetailsPage.dart';
+
 class TripChatPage extends StatefulWidget {
   final String tripId;
 
@@ -266,23 +267,23 @@ class _TripChatPageState extends State<TripChatPage> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Trip Chat"),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.info_outline),
-            tooltip: 'Trip Info',
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => TripInfoPage(tripId: widget.tripId),
-                ),
-              );
-            },
+     appBar: AppBar(
+  title: const Text("Trip Chat"),
+  actions: [
+    IconButton(
+      icon: const Icon(Icons.info_outline),
+      tooltip: 'Trip Info',
+      onPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => EditTripDetailsPage(tripId: widget.tripId),
           ),
-        ],
-      ),
+        );
+      },
+    ),
+  ],
+),
       body: Chat(
         messages: _messages,
         onSendPressed: _sendMessage,

@@ -273,57 +273,103 @@ class _HomePageState extends State<HomePage> {
     await _notificationsPlugin.show(0, title, body, notificationDetails);
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final List<Widget> _pages = [
-      _buildHomeContent(),
-      MapPage(),
-      plantrip1(),
-      Center(child: Text("Document a Trip Page Coming Soon")),
-      YourTripsPage(),
-    ];
+  // @override
+  // Widget build(BuildContext context) {
+  //   final List<Widget> _pages = [
+  //     _buildHomeContent(),
+  //     MapPage(),
+  //     plantrip1(),
+  //     // Center(child: Text("Document a Trip Page Coming Soon")),
+  //     YourTripsPage(),
+  //   ];
 
-    return Scaffold(
-      drawer: _buildProfileDrawer(),
-      body: Stack(
-        children: [
-          PageView(
-            controller: pageController,
-            onPageChanged: (index) {
-              setState(() {
-                _selectedIndex = index;
-              });
-            },
-            children: _pages, // Use _pages list for the pages
-          ),
-        ],
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        currentIndex: _selectedIndex,
-        onTap: (index) {
-          setState(() => _selectedIndex = index);
-          pageController.jumpToPage(index);
-        },
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-          BottomNavigationBarItem(icon: Icon(Icons.map), label: "Maps"),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.flight_takeoff),
-            label: "Plan a Trip",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.article),
-            label: "Document a Trip",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.card_travel),
-            label: "Your Trip",
-          ),
-        ],
-      ),
-    );
-  }
+  //   return Scaffold(
+  //     drawer: _buildProfileDrawer(),
+  //     body: Stack(
+  //       children: [
+  //         PageView(
+  //           controller: pageController,
+  //           onPageChanged: (index) {
+  //             setState(() {
+  //               _selectedIndex = index;
+  //             });
+  //           },
+  //           children: _pages, // Use _pages list for the pages
+  //         ),
+  //       ],
+  //     ),
+  //     bottomNavigationBar: BottomNavigationBar(
+  //       type: BottomNavigationBarType.fixed,
+  //       currentIndex: _selectedIndex,
+  //       onTap: (index) {
+  //         setState(() => _selectedIndex = index);
+  //         pageController.jumpToPage(index);
+  //       },
+  //       items: const [
+  //         BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
+  //         BottomNavigationBarItem(icon: Icon(Icons.map), label: "Maps"),
+  //         BottomNavigationBarItem(
+  //           icon: Icon(Icons.flight_takeoff),
+  //           label: "Plan a Trip",
+  //         ),
+  //         // BottomNavigationBarItem(
+  //         //   icon: Icon(Icons.article),
+  //         //   label: "Document a Trip",
+  //         // ),
+  //         BottomNavigationBarItem(
+  //           icon: Icon(Icons.card_travel),
+  //           label: "Your Trip",
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
+@override
+Widget build(BuildContext context) {
+  final List<Widget> _pages = [
+    _buildHomeContent(),
+    MapPage(),
+    plantrip1(),
+    YourTripsPage(),
+  ];
+
+  return Scaffold(
+    drawer: _buildProfileDrawer(),
+    body: Stack(
+      children: [
+        PageView(
+          controller: pageController,
+          onPageChanged: (index) {
+            setState(() {
+              _selectedIndex = index;
+            });
+          },
+          children: _pages,
+        ),
+      ],
+    ),
+    bottomNavigationBar: BottomNavigationBar(
+      type: BottomNavigationBarType.fixed,
+      currentIndex: _selectedIndex,
+      onTap: (index) {
+        setState(() => _selectedIndex = index);
+        pageController.jumpToPage(index);
+      },
+      items: const [
+        BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
+        BottomNavigationBarItem(icon: Icon(Icons.map), label: "Maps"),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.flight_takeoff),
+          label: "Plan a Trip",
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.card_travel),
+          label: "Your Trip",
+        ),
+      ],
+    ),
+  );
+}
 
   Widget _buildProfileDrawer() {
     final user = FirebaseAuth.instance.currentUser;

@@ -75,17 +75,7 @@ class plantrip1 extends StatelessWidget {
                 },
               ),
               SizedBox(height: 20),
-              RoundedBox(
-                title: "Plan Trip with AI",
-                icon: Icons.auto_mode,
-                onTap: () async{
-                   await _storeTripSelection("AI Trip");
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => plantrip2()),
-                  );
-                },
-              ),
+             
             ],
           ),
         ),

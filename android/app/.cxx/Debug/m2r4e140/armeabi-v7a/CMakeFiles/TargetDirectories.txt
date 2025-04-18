@@ -1,0 +1,2 @@
+C:/Users/Reshma/Downloads/TripTales/android/app/.cxx/Debug/m2r4e140/armeabi-v7a/CMakeFiles/edit_cache.dir
+C:/Users/Reshma/Downloads/TripTales/android/app/.cxx/Debug/m2r4e140/armeabi-v7a/CMakeFiles/rebuild_cache.dir

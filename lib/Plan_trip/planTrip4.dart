@@ -578,13 +578,17 @@ class _TripPlannerPageState extends State<plantrip4> {
                   actions: [
                     IconButton(
                       icon: const Icon(Icons.edit, color: Colors.black),
-                      onPressed: () async {
-                        await Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => EditTripDetailsPage()),
-                        );
-                        _loadTripType();
-                      },
+                     onPressed: tripId == null
+    ? null
+    : () async {
+        await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => EditTripDetailsPage(tripId: tripId!),
+          ),
+        );
+        _loadTripType(); // Reload after editing
+      },
                     ),
                   ],
                 ),
