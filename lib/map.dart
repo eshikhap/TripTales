@@ -6,8 +6,6 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 
 class MapPage extends StatelessWidget {
-  const MapPage({super.key});
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -18,8 +16,6 @@ class MapPage extends StatelessWidget {
 }
 
 class PlacesSearchScreen extends StatefulWidget {
-  const PlacesSearchScreen({super.key});
-
   @override
   _PlacesSearchScreenState createState() => _PlacesSearchScreenState();
 }

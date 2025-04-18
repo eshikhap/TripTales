@@ -4,14 +4,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'EditTripDetailsPage.dart';
 
 class plantrip4 extends StatefulWidget {
-  const plantrip4({super.key});
-
   @override
   _TripPlannerPageState createState() => _TripPlannerPageState();
 }
 
 class _TripPlannerPageState extends State<plantrip4> {
-  final PageController _pageController = PageController();
+  PageController _pageController = PageController();
   int _currentPage = 0;
   String? tripId;
   String? tripType;

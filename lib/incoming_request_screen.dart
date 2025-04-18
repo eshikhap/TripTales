@@ -4,7 +4,7 @@ import 'package:async/async.dart';
 
 class IncomingRequestsScreen extends StatelessWidget {
   final Map<String, dynamic> currentUser;
-  const IncomingRequestsScreen({super.key, required this.currentUser});
+  const IncomingRequestsScreen({required this.currentUser});
 
   Future<void> _acceptRequest({
     required String requestId,
@@ -65,13 +65,13 @@ class IncomingRequestsScreen extends StatelessWidget {
       final friendRequests = combined[0].docs.map((doc) => {
             'id': doc.id,
             'type': 'friend',
-            ...doc.data(),
+            ...doc.data() as Map<String, dynamic>,
           });
 
       final tripRequests = combined[1].docs.map((doc) => {
             'id': doc.id,
             'type': 'trip',
-            ...doc.data(),
+            ...doc.data() as Map<String, dynamic>,
           });
 
       yield [...friendRequests, ...tripRequests];

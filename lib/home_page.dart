@@ -834,8 +834,6 @@
 
 
 ////// new
-library;
-
 
 
 import 'package:flutter/material.dart';
@@ -861,7 +859,7 @@ import 'trip_chat_page.dart';
 
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  const HomePage({Key? key}) : super(key: key);
 
   @override
   _HomePageState createState() => _HomePageState();
@@ -884,7 +882,7 @@ class _HomePageState extends State<HomePage> {
   String? error;
   List<Map<String, String>> favoritePlaces = [];
   
-  get pageController => null;
+  late final PageController pageController = PageController();
 
 
   bool _isFavorite(Map<String, String> place) {
@@ -1114,7 +1112,7 @@ Future<void> _showNotification({
 Widget build(BuildContext context) {
 
   
-  final List<Widget> pages = [
+  final List<Widget> _pages = [
     _buildHomeContent(),
     MapPage(),
     plantrip1(),
@@ -1133,32 +1131,25 @@ Widget build(BuildContext context) {
               _selectedIndex = index;
             });
           },
-          children: pages, // Use _pages list for the pages
+          children: _pages, // Use _pages list for the pages
         ),
       ],
     ),
-    bottomNavigationBar: BottomNavigationBar(
-      type: BottomNavigationBarType.fixed,
-      currentIndex: _selectedIndex,
-      onTap: (index) {
-        if (index == 0) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => MapPage()),
-          );
-        } else {
-          setState(() => _selectedIndex = index);
-          _pageController.jumpToPage(index); // Navigate to the selected page
-        }
-      },
-      items: [
-        BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-        BottomNavigationBarItem(icon: Icon(Icons.map), label: "Maps"),
-        BottomNavigationBarItem(icon: Icon(Icons.flight_takeoff), label: "Plan a Trip"),
-        BottomNavigationBarItem(icon: Icon(Icons.article), label: "Document a Trip"),
-        BottomNavigationBarItem(icon: Icon(Icons.card_travel), label: "Your Trip"),
-      ],
-    ),
+  bottomNavigationBar: BottomNavigationBar(
+  type: BottomNavigationBarType.fixed,
+  currentIndex: _selectedIndex,
+  onTap: (index) {
+    setState(() => _selectedIndex = index);
+    pageController.jumpToPage(index);
+  },
+  items: const [
+    BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
+    BottomNavigationBarItem(icon: Icon(Icons.map), label: "Maps"),
+    BottomNavigationBarItem(icon: Icon(Icons.flight_takeoff), label: "Plan a Trip"),
+    BottomNavigationBarItem(icon: Icon(Icons.article), label: "Document a Trip"),
+    BottomNavigationBarItem(icon: Icon(Icons.card_travel), label: "Your Trip"),
+  ],
+),
   );
 }
 
@@ -1287,7 +1278,7 @@ Widget _buildHomeContent() {
 
   Widget _buildQuoteSection() {
     return Center(
-      child: SizedBox(
+      child: Container(
         width: 300,
         height: 50,
         child: DefaultTextStyle(
@@ -1470,9 +1461,6 @@ Widget _buildHomeContent() {
   }
 }
 
-class _pageController {
-  static void jumpToPage(int index) {}
-}
 
 class _notificationsPlugin {
     bool _notificationsEnabled = true;
@@ -1682,8 +1670,6 @@ class _PlaceDetailPageState extends State<PlaceDetailPage> {
 
 class SavedTripsSection extends StatelessWidget {
   final String googleApiKey = 'AIzaSyBw1GfQx7suGPPUXdc8p5aWuw5CzdhxrP4';
-
-  const SavedTripsSection({super.key});
 
   Future<String?> _fetchPhotoUrl(String location) async {
     final queryUrl =

@@ -103,7 +103,7 @@ class _TripInfoPageState extends State<TripInfoPage> {
             _buildDatePicker("End Date", endDate, (newDate) => setState(() => endDate = newDate)),
             const SizedBox(height: 20),
             Text("Members:", style: Theme.of(context).textTheme.titleMedium),
-            ...List<String>.from(tripData?['members'] ?? []).map((uid) => Text("- $uid")),
+            ...List<String>.from(tripData?['members'] ?? []).map((uid) => Text("- $uid")).toList(),
             const SizedBox(height: 20),
             _buildListEditor("Hotels", hotels),
             _buildListEditor("Places to Visit", places),

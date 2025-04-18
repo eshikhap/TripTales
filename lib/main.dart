@@ -28,7 +28,7 @@ void main() async {
 
 class MyApp extends StatelessWidget {
   final bool isFirstLaunch;
-  const MyApp({super.key, required this.isFirstLaunch});
+  const MyApp({Key? key, required this.isFirstLaunch}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -41,8 +41,6 @@ class MyApp extends StatelessWidget {
 
 // Redirect Based on Authentication
 class AuthWrapper extends StatelessWidget {
-  const AuthWrapper({super.key});
-
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<User?>(

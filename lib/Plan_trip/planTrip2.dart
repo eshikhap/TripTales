@@ -7,8 +7,6 @@ import 'planTrip3.dart';
 // import '../search_friend_screen.dart'; // Make sure the path is correct
 
 class plantrip2 extends StatefulWidget {
-  const plantrip2({super.key});
-
   @override
   _plantrip2State createState() => _plantrip2State();
 }

@@ -4,7 +4,7 @@ class RoundedBox extends StatelessWidget {
   final String title;
   final IconData icon;
   final VoidCallback onTap;
-  const RoundedBox({super.key, required this.title, required this.icon, required this.onTap});
+  RoundedBox({required this.title, required this.icon, required this.onTap});
   @override
   Widget build(BuildContext context) {
   return GestureDetector(

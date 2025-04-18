@@ -3,8 +3,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'auth_gate.dart';
 
 class WelcomePage extends StatelessWidget {
-  const WelcomePage({super.key});
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
