@@ -9,6 +9,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
 import 'package:video_player/video_player.dart';
 import 'trip_info.dart';
+
 class TripChatPage extends StatefulWidget {
   final String tripId;
 
@@ -96,18 +97,19 @@ class _TripChatPageState extends State<TripChatPage> {
             size: 0,
           );
         } else if (data['type'] == 'video') {
-          return types.VideoMessage(
+          return types.CustomMessage(
             id: doc.id,
             author: types.User(
               id: data['sender'],
               firstName: data['senderName'] ?? '',
               imageUrl: data['senderAvatarUrl'],
             ),
-            uri: data['url'],
             createdAt: (data['timestamp'] as Timestamp).millisecondsSinceEpoch,
-            name: "📹 ${data['caption'] ?? ''}",
-            size: 0,
-            height: 200,
+            metadata: {
+              'type': 'video',
+              'url': data['url'],
+              'caption': data['caption'],
+            },
           );
         }
 
@@ -160,24 +162,29 @@ class _TripChatPageState extends State<TripChatPage> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text("Send $type?"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              type == "image"
-                  ? Image.file(file, width: 200, height: 200, fit: BoxFit.cover)
-                  : AspectRatio(
-                      aspectRatio: 16 / 9,
-                      child: VideoPlayerWidget(file: file),
+          content: SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxHeight: 400),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  type == "image"
+                      ? Image.file(file, width: 200, height: 200, fit: BoxFit.cover)
+                      : AspectRatio(
+                          aspectRatio: 16 / 9,
+                          child: VideoPlayerPreview(file: file),
+                        ),
+                  SizedBox(height: 10),
+                  TextField(
+                    controller: captionController,
+                    decoration: InputDecoration(
+                      hintText: "Add a caption...",
+                      border: OutlineInputBorder(),
                     ),
-              SizedBox(height: 10),
-              TextField(
-                controller: captionController,
-                decoration: InputDecoration(
-                  hintText: "Add a caption...",
-                  border: OutlineInputBorder(),
-                ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
           actions: [
             TextButton(
@@ -261,49 +268,72 @@ class _TripChatPageState extends State<TripChatPage> {
 
     return Scaffold(
       appBar: AppBar(
-  title: const Text("Trip Chat"),
-  actions: [
-    IconButton(
-      icon: const Icon(Icons.info_outline),
-      tooltip: 'Trip Info',
-      onPressed: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => TripInfoPage(tripId: widget.tripId),
+        title: const Text("Trip Chat"),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.info_outline),
+            tooltip: 'Trip Info',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => TripInfoPage(tripId: widget.tripId),
+                ),
+              );
+            },
           ),
-        );
-      },
-    ),
-  ],
-),
+        ],
+      ),
       body: Chat(
         messages: _messages,
         onSendPressed: _sendMessage,
         onAttachmentPressed: _handleAttachmentPressed,
         user: _currentUser,
+        customMessageBuilder: (types.CustomMessage message, {required int messageWidth}) {
+          final meta = message.metadata ?? {};
+          if (meta['type'] == 'video' && meta['url'] != null) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(
+                  width: messageWidth.toDouble(),
+                  height: 200,
+                  child: VideoPlayerWidget(url: meta['url']),
+                ),
+                if (meta['caption'] != null && (meta['caption'] as String).isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4.0),
+                    child: Text(meta['caption'], style: TextStyle(fontStyle: FontStyle.italic)),
+                  ),
+              ],
+            );
+          }
+          return Text("Unsupported message");
+        },
       ),
     );
   }
 }
-
-class VideoPlayerWidget extends StatefulWidget {
+class VideoPlayerPreview extends StatefulWidget {
   final File file;
-  const VideoPlayerWidget({Key? key, required this.file}) : super(key: key);
+  const VideoPlayerPreview({Key? key, required this.file}) : super(key: key);
 
   @override
-  _VideoPlayerWidgetState createState() => _VideoPlayerWidgetState();
+  _VideoPlayerPreviewState createState() => _VideoPlayerPreviewState();
 }
 
-class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
+class _VideoPlayerPreviewState extends State<VideoPlayerPreview> {
   late VideoPlayerController _controller;
+  bool _isInitialized = false;
 
   @override
   void initState() {
     super.initState();
     _controller = VideoPlayerController.file(widget.file)
       ..initialize().then((_) {
-        setState(() {});
+        setState(() {
+          _isInitialized = true;
+        });
         _controller.play();
       });
   }
@@ -316,7 +346,50 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return _controller.value.isInitialized
+    return _isInitialized
+        ? AspectRatio(
+            aspectRatio: _controller.value.aspectRatio,
+            child: VideoPlayer(_controller),
+          )
+        : Center(child: CircularProgressIndicator());
+  }
+}
+
+
+class VideoPlayerWidget extends StatefulWidget {
+  final String url;
+  const VideoPlayerWidget({Key? key, required this.url}) : super(key: key);
+
+  @override
+  _VideoPlayerWidgetState createState() => _VideoPlayerWidgetState();
+}
+
+class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
+  late VideoPlayerController _controller;
+  bool _isInitialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = VideoPlayerController.network(widget.url)
+      ..initialize().then((_) {
+        setState(() {
+          _isInitialized = true;
+        });
+        _controller.setLooping(true);
+        _controller.play();
+      });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _isInitialized
         ? AspectRatio(
             aspectRatio: _controller.value.aspectRatio,
             child: VideoPlayer(_controller),
