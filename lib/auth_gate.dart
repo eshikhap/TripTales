@@ -1,64 +1,3 @@
-// import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
-// import 'package:firebase_ui_auth/firebase_ui_auth.dart';
-// import 'package:flutter/material.dart';
-
-// import 'home_page.dart';
-
-// class AuthGate extends StatelessWidget {
-//   const AuthGate({super.key});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return StreamBuilder<User?>(
-//       stream: FirebaseAuth.instance.authStateChanges(),
-//       builder: (context, snapshot) {
-//         if (!snapshot.hasData) {
-//           return SignInScreen(
-//             providers: [
-//               EmailAuthProvider(),
-//             ],
-//             headerBuilder: (context, constraints, shrinkOffset) {
-//               return Padding(
-//                 padding: const EdgeInsets.all(20),
-//                 child: AspectRatio(
-//                   aspectRatio: 1,
-//                   child: Image.asset('flutterfire_300x.png'),
-//                 ),
-//               );
-//             },
-//             subtitleBuilder: (context, action) {
-//               return Padding(
-//                 padding: const EdgeInsets.symmetric(vertical: 8.0),
-//                 child: action == AuthAction.signIn
-//                     ? const Text('Welcome to FlutterFire, please sign in!')
-//                     : const Text('Welcome to Flutterfire, please sign up!'),
-//               );
-//             },
-//             footerBuilder: (context, action) {
-//               return const Padding(
-//                 padding: EdgeInsets.only(top: 16),
-//                 child: Text(
-//                   'By signing in, you agree to our terms and conditions.',
-//                   style: TextStyle(color: Colors.grey),
-//                 ),
-//               );
-//             },
-//             sideBuilder: (context, shrinkOffset) {
-//               return Padding(
-//                 padding: const EdgeInsets.all(20),
-//                 child: AspectRatio(
-//                   aspectRatio: 1,
-//                   child: Image.asset('flutterfire_300x.png'),
-//                 ),
-//               );
-//             },
-//           );
-//         }
-//         return HomePage();
-//       },
-//     );
-//   }
-// }
 import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -66,81 +5,109 @@ import 'package:flutter/material.dart';
 
 import 'home_page.dart';
 
-class AuthGate extends StatelessWidget {
+class AuthGate extends StatefulWidget {
   const AuthGate({super.key});
 
-  Future<void> _storeUserData(User user) async {
-    DocumentReference userDoc = FirebaseFirestore.instance.collection('users').doc(user.uid);
+  @override
+  State<AuthGate> createState() => _AuthGateState();
+}
 
-    // Check if user data already exists
-    DocumentSnapshot docSnapshot = await userDoc.get();
-
-    if (!docSnapshot.exists) {
-      await userDoc.set({
-        'id': user.uid,
-        'name': user.displayName ?? '',
-        'email': user.email,
-        'createdAt': FieldValue.serverTimestamp(),
-      });
-      print("User data stored in Firestore!");
-    } else {
-      print("User already exists in Firestore.");
-    }
-  }
+class _AuthGateState extends State<AuthGate> {
+  bool _isHandlingUser = false;
+  bool _userHandled = false;
 
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<User?>(
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
-        if (!snapshot.hasData) {
+        final user = snapshot.data;
+
+        // Not signed in
+        if (user == null) {
+          _isHandlingUser = false;
+          _userHandled = false;
+
           return SignInScreen(
             providers: [
               EmailAuthProvider(),
             ],
-            headerBuilder: (context, constraints, shrinkOffset) {
-              return Padding(
-                padding: const EdgeInsets.all(20),
-                child: AspectRatio(
-                  aspectRatio: 1,
-                  child: Image.asset('flutterfire_300x.png'),
-                ),
-              );
-            },
-            subtitleBuilder: (context, action) {
-              return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: action == AuthAction.signIn
-                    ? const Text('Welcome to FlutterFire, please sign in!')
-                    : const Text('Welcome to FlutterFire, please sign up!'),
-              );
-            },
-            footerBuilder: (context, action) {
-              return const Padding(
-                padding: EdgeInsets.only(top: 16),
-                child: Text(
-                  'By signing in, you agree to our terms and conditions.',
-                  style: TextStyle(color: Colors.grey),
-                ),
-              );
-            },
-            sideBuilder: (context, shrinkOffset) {
-              return Padding(
-                padding: const EdgeInsets.all(20),
-                child: AspectRatio(
-                  aspectRatio: 1,
-                  child: Image.asset('flutterfire_300x.png'),
-                ),
-              );
-            },
           );
         }
 
-        // Store user in Firestore if it's their first time logging in
-        _storeUserData(snapshot.data!);
+        // Signed in but not yet processed
+        if (!_isHandlingUser && !_userHandled) {
+          _isHandlingUser = true;
+          _processUser(user);
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
 
-        return HomePage();
+        // All done
+        return const HomePage();
       },
     );
+  }
+
+  Future<void> _processUser(User user) async {
+    final userDoc = FirebaseFirestore.instance.collection('users').doc(user.uid);
+    final docSnapshot = await userDoc.get();
+
+    String? name = user.displayName;
+
+    if (name == null || name.isEmpty) {
+      name = await _askForName(context);
+      if (name != null && name.isNotEmpty) {
+        await user.updateDisplayName(name);
+      }
+    }
+
+    if (!docSnapshot.exists) {
+      await userDoc.set({
+        'id': user.uid,
+        'name': name ?? '',
+        'email': user.email,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+    }
+
+    setState(() {
+      _userHandled = true;
+    });
+  }
+
+  Future<String?> _askForName(BuildContext context) async {
+    String? name;
+    final controller = TextEditingController();
+
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('What’s your name?'),
+          content: TextField(
+            controller: controller,
+            decoration: const InputDecoration(labelText: 'Name'),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                name = controller.text.trim();
+                Navigator.of(context).pop();
+              },
+              child: const Text('Submit'),
+            ),
+          ],
+        );
+      },
+    );
+
+    return name;
   }
 }
