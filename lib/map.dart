@@ -4,7 +4,7 @@ import 'package:geocoding/geocoding.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter/services.dart';
-
+import 'home_page.dart';
 class MapPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -26,7 +26,7 @@ class _PlacesSearchScreenState extends State<PlacesSearchScreen> {
   LatLng? _selectedLocation;
   Set<Marker> _markers = {};
   static const String apiKey =
-      "API KEY"; // Store securely
+      "AIzaSyBw1GfQx7suGPPUXdc8p5aWuw5CzdhxrP4"; // Store securely
 
   List<dynamic> visitedPlaces = [];
   List<dynamic> upcomingPlaces = [];
@@ -218,17 +218,43 @@ class _PlacesSearchScreenState extends State<PlacesSearchScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text("Travel Guide")),
-      body: Column(
+Widget build(BuildContext context) {
+  return Scaffold(
+    extendBodyBehindAppBar: true,
+    appBar: AppBar(
+      title: Text("Explore the world"),
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      leading: IconButton(
+        icon: Icon(Icons.arrow_back),
+        onPressed: () {
+          // Navigate to HomePage and remove this screen from the navigation stack
+          Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
+        },
+      ),
+    ),
+    body: Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF93A5CF), Color(0xFFE4EFE9)],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
+      ),
+      child: Column(
         children: [
+          SizedBox(height: MediaQuery.of(context).padding.top + kToolbarHeight),
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
                 labelText: "Enter city, area, or tourist spot",
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 suffixIcon: IconButton(
                   icon: Icon(Icons.search),
                   onPressed: _searchLocation,
@@ -237,20 +263,26 @@ class _PlacesSearchScreenState extends State<PlacesSearchScreen> {
             ),
           ),
           Expanded(
-            child: GoogleMap(
-              initialCameraPosition: CameraPosition(
-                target: LatLng(20.5937, 78.9629),
-                zoom: 5,
+            child: ClipRRect(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+              child: GoogleMap(
+                initialCameraPosition: CameraPosition(
+                  target: LatLng(20.5937, 78.9629),
+                  zoom: 5,
+                ),
+                markers: _markers,
+                onMapCreated: (controller) {
+                  _mapController = controller;
+                  _loadMapStyle();
+                },
               ),
-              markers: _markers,
-              onMapCreated: (controller) {
-                _mapController = controller;
-                _loadMapStyle();
-              },
             ),
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
+
+
 }

@@ -17,31 +17,69 @@ class _TripPlannerPageState extends State<plantrip4> {
 
   final Map<String, List<String>> tripQuestions = {
     "family": [
-      "Who are the family members going?",
-      "Do you need kid-friendly activities?",
-      "Do you need family accommodation?",
+      "Who are the family members joining you (ages if kids)?",
+      "Would you like to include kid-friendly or family-oriented activities?",
+      "Do you prefer family suites, vacation rentals, or adjoining hotel rooms?",
+      "Do you need facilities like baby gear, high chairs, or strollers?"
     ],
     "solo": [
-      "What’s your main goal for this solo trip?",
-      "Do you have any safety concerns?",
-      "Do you prefer hostels or hotels?",
+      "What’s the purpose of your solo trip (relaxation, exploration, personal growth)?",
+      "Are there any specific safety concerns or travel precautions you'd like us to consider?",
+      "Do you prefer social stays like hostels or private accommodations like hotels or Airbnbs?",
+      "Would you like suggestions for solo-friendly tours or experiences?"
     ],
     "friends": [
-      "How many friends are joining?",
-      "Do you want group activities?",
-      "Do you prefer nightlife spots?",
+      "How many friends are going on the trip?",
+      "Do you want to include group-friendly activities like hikes, escape rooms, or parties?",
+      "Are you looking for nightlife spots, beach clubs, or casual hangout places?",
+      "Would you like to stay together in a shared space like a villa or split accommodations?"
     ],
     "business": [
-      "What’s the main purpose of the trip?",
-      "Any meetings scheduled?",
-      "Do you need conference facilities?",
+      "What’s the primary business goal for this trip (conference, client meeting, networking)?",
+      "Do you have a fixed schedule or time blocks we should work around?",
+      "Do you need access to business amenities like meeting rooms, printing, or high-speed WiFi?",
+      "Would you like help balancing work with leisure (e.g., after-work dining, local sightseeing)?"
     ]
   };
 
   final List<String> baseQuestions = [
-    "What is your destination?",
-    "What are your trip start and end dates?"
+    "Give a name to your trip",
+    "Where are you traveling to?",
+    "What are your travel dates (start and end)?",
+    "What’s your estimated budget for this trip?",
+    "What type of trip is this? (e.g., leisure, adventure, cultural, relaxation)",
+    "Are there any specific activities or experiences you're looking for?"
   ];
+
+  final Map<String, List<String>> predefinedOptions = {
+    "Do you prefer family suites, vacation rentals, or adjoining hotel rooms?": [
+      "Family Suites", "Vacation Rentals", "Adjoining Rooms"
+    ],
+    "Do you need facilities like baby gear, high chairs, or strollers?": [
+      "Yes", "No", "Maybe"
+    ],
+    "Do you prefer social stays like hostels or private accommodations like hotels or Airbnbs?": [
+      "Hostels", "Hotels", "Airbnbs", "Other"
+    ],
+    "Would you like suggestions for solo-friendly tours or experiences?": [
+      "Yes", "No", "Maybe"
+    ],
+    "Are you looking for nightlife spots, beach clubs, or casual hangout places?": [
+      "Nightlife", "Beach Clubs", "Casual Hangouts", "All"
+    ],
+    "Would you like to stay together in a shared space like a villa or split accommodations?": [
+      "Shared Villa", "Split Accommodations", "Don't Know"
+    ],
+    "Do you need access to business amenities like meeting rooms, printing, or high-speed WiFi?": [
+      "Yes", "No", "Maybe"
+    ],
+    "Would you like help balancing work with leisure (e.g., after-work dining, local sightseeing)?": [
+      "Yes", "No", "Not Sure"
+    ],
+    "What type of trip is this? (e.g., leisure, adventure, cultural, relaxation)": [
+      "Leisure", "Adventure", "Cultural", "Relaxation", "Business", "Family", "Solo", "Friends"
+    ],
+  };
 
   @override
   void initState() {
@@ -68,6 +106,7 @@ class _TripPlannerPageState extends State<plantrip4> {
         controllers[question] =
             TextEditingController(text: existingAnswers?[question] ?? '');
       }
+
       controllers['startDate'] =
           TextEditingController(text: existingAnswers?['startDate'] ?? '');
       controllers['endDate'] =
@@ -167,14 +206,19 @@ class _TripPlannerPageState extends State<plantrip4> {
                                 ),
                               ),
                               SizedBox(height: 24),
-                              if (question == "What are your trip start and end dates?")
+                              if (question == "What are your travel dates (start and end)?")
                                 Column(
                                   children: [
-                                    _buildInputField("Start Date", controllers['startDate']),
+                                    _buildDatePickerField("Start Date", 'startDate'),
                                     SizedBox(height: 12),
-                                    _buildInputField("End Date", controllers['endDate']),
+                                    _buildDatePickerField("End Date", 'endDate'),
                                   ],
                                 )
+                              else if (predefinedOptions.containsKey(question))
+                                _buildDropdownFieldWithOptions(
+                                    controllers[question]!,
+                                    predefinedOptions[question]!,
+                                    "Select an option")
                               else
                                 _buildInputField("Your Answer", controllers[question]),
                               SizedBox(height: 40),
@@ -184,15 +228,17 @@ class _TripPlannerPageState extends State<plantrip4> {
                                   if (index > 0)
                                     _navButton("Back", Colors.grey.shade400, () {
                                       _pageController.previousPage(
-                                          duration: Duration(milliseconds: 300),
-                                          curve: Curves.easeInOut);
+                                        duration: Duration(milliseconds: 300),
+                                        curve: Curves.easeInOut,
+                                      );
                                     }),
                                   if (index < questions.length - 1)
                                     _navButton("Next", Colors.blueAccent, () async {
                                       await _saveResponses();
                                       _pageController.nextPage(
-                                          duration: Duration(milliseconds: 300),
-                                          curve: Curves.easeInOut);
+                                        duration: Duration(milliseconds: 300),
+                                        curve: Curves.easeInOut,
+                                      );
                                     }),
                                   if (index == questions.length - 1)
                                     _navButton("Finish", Colors.green, () async {
@@ -236,6 +282,69 @@ class _TripPlannerPageState extends State<plantrip4> {
       ),
     );
   }
+
+  Widget _buildDatePickerField(String label, String key) {
+    return TextField(
+      controller: controllers[key],
+      readOnly: true,
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: TextStyle(color: Colors.black87),
+        filled: true,
+        fillColor: Colors.white.withOpacity(0.7),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+      ),
+      onTap: () async {
+        final pickedDate = await showDatePicker(
+          context: context,
+          initialDate: DateTime.now(),
+          firstDate: DateTime.now(),
+          lastDate: DateTime(2100),
+        );
+        if (pickedDate != null) {
+          controllers[key]?.text = pickedDate.toString().split(' ')[0];
+        }
+      },
+    );
+  }
+
+  // Widget _buildDropdownFieldWithOptions(
+  //     TextEditingController controller, List<String> options, String label) {
+  //   return DropdownButtonFormField<String>(
+  //     value: controller.text.isEmpty ? null : controller.text,
+  //     items: options.map((option) {
+  //       return DropdownMenuItem(value: option, child: Text(option));
+  //     }).toList(),
+  //     onChanged: (value) {
+  //       controller.text = value ?? '';
+  //     },
+  //     decoration: InputDecoration(
+  //       labelText: label,
+  //       filled: true,
+  //       fillColor: Colors.white.withOpacity(0.7),
+  //       border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+  //     ),
+  //   );
+  // }
+
+Widget _buildDropdownFieldWithOptions(
+    TextEditingController controller, List<String> options, String label) {
+  return DropdownButtonFormField<String>(
+    value: controller.text.isEmpty ? options[0] : controller.text,  // Set default value
+    items: options.map((option) {
+      return DropdownMenuItem(value: option, child: Text(option));
+    }).toList(),
+    onChanged: (value) {
+      controller.text = value ?? '';  // Update controller when value changes
+    },
+    decoration: InputDecoration(
+      labelText: label,
+      filled: true,
+      fillColor: Colors.white.withOpacity(0.7),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+    ),
+  );
+}
 
   Widget _navButton(String text, Color color, VoidCallback onPressed) {
     return ElevatedButton(

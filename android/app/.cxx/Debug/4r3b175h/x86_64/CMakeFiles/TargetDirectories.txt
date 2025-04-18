@@ -1,0 +1,2 @@
+C:/Users/Reshma/Documents/TripTales/android/app/.cxx/Debug/4r3b175h/x86_64/CMakeFiles/edit_cache.dir
+C:/Users/Reshma/Documents/TripTales/android/app/.cxx/Debug/4r3b175h/x86_64/CMakeFiles/rebuild_cache.dir
