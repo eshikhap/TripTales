@@ -2,6 +2,13 @@
 
 TripTales is tailored for travel lovers to **plan**, **document**, and **relive** their journeys. Whether you're a solo explorer or planning a family vacation, TripTales brings smart trip planning, multimedia journaling, and location-based recommendations to your fingertips.
 
+It empowers users to:
+- **Plan custom trips** (solo, friends, family, or business).
+- **Capture moments** with photos, videos, voice notes, and more.
+- **Visualize trips** on an interactive map.
+- **Collaborate** with friends during trip planning and journaling.
+
+---
 
 A new Flutter project.
 
