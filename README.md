@@ -35,3 +35,7 @@ It empowers users to:
 ### 📱 Platforms
 - Android mobile devices
 - Responsive design for phones and tablets
+
+### 🔗 Links 
+- Google Site : https://sites.google.com/iitj.ac.in/triptales-softwareengineeringp/home
+- Youtube Link : https://youtu.be/gsOqHQgkZwM
