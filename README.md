@@ -26,31 +26,12 @@ It empowers users to:
 - Color-coded display of planned and visited trips.
 - View trip details on Google Maps.
 - Bookmark locations or search using tags/dates.
-
-### 💸 Expense Tracking
-- Attach financial details to trips.
-- Review expense summaries for past travels.
+- Fetch nearby popular places and saved trip locations with details and directions shown directly on the map.
 
 ### 🔔 Notifications
 - Real-time alerts for trip progress, reminders, and updates.
 
 ---
 ### 📱 Platforms
-- Android & iOS mobile devices
+- Android mobile devices
 - Responsive design for phones and tablets
-
-
-A new Flutter project.
-
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
