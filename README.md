@@ -1,4 +1,7 @@
-# triptale
+# 🧭 TripTales – Custom Travel Journal App
+
+TripTales is tailored for travel lovers to **plan**, **document**, and **relive** their journeys. Whether you're a solo explorer or planning a family vacation, TripTales brings smart trip planning, multimedia journaling, and location-based recommendations to your fingertips.
+
 
 A new Flutter project.
 
