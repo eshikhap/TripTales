@@ -35,6 +35,9 @@ It empowers users to:
 - Real-time alerts for trip progress, reminders, and updates.
 
 ---
+### 📱 Platforms
+- Android & iOS mobile devices
+- Responsive design for phones and tablets
 
 
 A new Flutter project.
