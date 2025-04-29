@@ -9,6 +9,33 @@ It empowers users to:
 - **Collaborate** with friends during trip planning and journaling.
 
 ---
+## 🚀 Key Features
+
+### ✈️ Trip Planning
+- Create travel itineraries with destinations, dates, categories.
+- Plan collaboratively with friends/family.
+- Categorize trips as solo, group, or business.
+- Google Maps integration for visual route planning.
+
+### 📓 Travel Journaling
+- Add text, audio, photos, and video entries.
+- Tag memories by mood, location, or activity.
+- Auto-journal entries from media shared in trip groups.
+
+### 🗺️ Interactive Map View
+- Color-coded display of planned and visited trips.
+- View trip details on Google Maps.
+- Bookmark locations or search using tags/dates.
+
+### 💸 Expense Tracking
+- Attach financial details to trips.
+- Review expense summaries for past travels.
+
+### 🔔 Notifications
+- Real-time alerts for trip progress, reminders, and updates.
+
+---
+
 
 A new Flutter project.
 
