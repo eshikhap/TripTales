@@ -135,6 +135,52 @@
 //         .update({'tripDetails': answers});
 //   }
 
+//   Future<void> _deleteTrip() async {
+//     if (tripId == null) return;
+
+//     await FirebaseFirestore.instance.collection('trips').doc(tripId!).delete();
+//     SharedPreferences prefs = await SharedPreferences.getInstance();
+//     await prefs.remove('tripId');
+//     ScaffoldMessenger.of(context).showSnackBar(
+//       SnackBar(content: Text("Trip deleted.")),
+//     );
+//   }
+
+//   Future<bool> _handleBackNavigation() async {
+//     final startDateFilled = controllers['startDate']?.text.isNotEmpty ?? false;
+//     final endDateFilled = controllers['endDate']?.text.isNotEmpty ?? false;
+
+//     if (!startDateFilled || !endDateFilled) {
+//       bool? confirmExit = await showDialog(
+//         context: context,
+//         builder: (context) => AlertDialog(
+//           title: Text("Incomplete Trip"),
+//           content: Text(
+//               "You haven’t filled in your travel dates. If you go back now, your trip will be deleted. Do you want to continue?"),
+//           actions: [
+//             TextButton(
+//               onPressed: () => Navigator.of(context).pop(false),
+//               child: Text("Stay"),
+//             ),
+//             TextButton(
+//               onPressed: () => Navigator.of(context).pop(true),
+//               child: Text("Leave & Delete", style: TextStyle(color: Colors.red)),
+//             ),
+//           ],
+//         ),
+//       );
+
+//       if (confirmExit == true) {
+//         await _deleteTrip();
+//         return true;
+//       } else {
+//         return false;
+//       }
+//     }
+
+//     return true;
+//   }
+
 //   @override
 //   Widget build(BuildContext context) {
 //     if (tripType == null) {
@@ -148,116 +194,133 @@
 //       ...(tripQuestions[tripType] ?? [])
 //     ];
 
-//     return Scaffold(
-//       body: Container(
-//         decoration: const BoxDecoration(
-//           gradient: LinearGradient(
-//             colors: [Color(0xFF93A5CF), Color(0xFFE4EFE9)],
-//             begin: Alignment.topCenter,
-//             end: Alignment.bottomCenter,
+//     return WillPopScope(
+//       onWillPop: _handleBackNavigation,
+//       child: Scaffold(
+//         body: Container(
+//           decoration: const BoxDecoration(
+//             gradient: LinearGradient(
+//               colors: [Color(0xFF93A5CF), Color(0xFFE4EFE9)],
+//               begin: Alignment.topCenter,
+//               end: Alignment.bottomCenter,
+//             ),
 //           ),
-//         ),
-//         child: SafeArea(
-//           child: Column(
-//             children: [
-//               AppBar(
-//                 backgroundColor: Colors.transparent,
-//                 elevation: 0,
-//                 title: const Text("Trip Planner", style: TextStyle(color: Colors.black)),
-//                 actions: [
-//                   IconButton(
-//                     icon: const Icon(Icons.edit, color: Colors.black),
-//                     onPressed: () async {
-//                       await Navigator.push(
-//                         context,
-//                         MaterialPageRoute(builder: (_) => EditTripDetailsPage()),
-//                       );
-//                       _loadTripType();
-//                     },
-//                   ),
-//                 ],
-//               ),
-//               Expanded(
-//                 child: PageView.builder(
-//                   controller: _pageController,
-//                   itemCount: questions.length,
-//                   onPageChanged: (index) => setState(() => _currentPage = index),
-//                   itemBuilder: (context, index) {
-//                     final question = questions[index];
-//                     return Padding(
-//                       padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20),
-//                       child: Center(
-//                         child: SingleChildScrollView(
-//                           child: Column(
-//                             mainAxisAlignment: MainAxisAlignment.center,
-//                             children: [
-//                               Text(
-//                                 "Question ${index + 1} of ${questions.length}",
-//                                 style: TextStyle(color: Colors.black54),
-//                               ),
-//                               SizedBox(height: 30),
-//                               Text(
-//                                 question,
-//                                 textAlign: TextAlign.center,
-//                                 style: TextStyle(
-//                                   fontSize: 22,
-//                                   fontWeight: FontWeight.w700,
-//                                   color: Colors.black87,
+//           child: SafeArea(
+//             child: Column(
+//               children: [
+//                 AppBar(
+//                   backgroundColor: Colors.transparent,
+//                   elevation: 0,
+//                   title: const Text("Trip Planner", style: TextStyle(color: Colors.black)),
+//                   actions: [
+//                     IconButton(
+//                       icon: const Icon(Icons.edit, color: Colors.black),
+//                       onPressed: tripId == null
+//                           ? null
+//                           : () async {
+//                               await Navigator.push(
+//                                 context,
+//                                 MaterialPageRoute(
+//                                   builder: (context) =>
+//                                       EditTripDetailsPage(tripId: tripId!),
 //                                 ),
-//                               ),
-//                               SizedBox(height: 24),
-//                               if (question == "What are your travel dates (start and end)?")
-//                                 Column(
+//                               );
+//                               _loadTripType();
+//                             },
+//                     ),
+//                   ],
+//                 ),
+//                 Expanded(
+//                   child: PageView.builder(
+//                     controller: _pageController,
+//                     itemCount: questions.length,
+//                     onPageChanged: (index) => setState(() => _currentPage = index),
+//                     itemBuilder: (context, index) {
+//                       final question = questions[index];
+//                       return Padding(
+//                         padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20),
+//                         child: Center(
+//                           child: SingleChildScrollView(
+//                             child: Column(
+//                               mainAxisAlignment: MainAxisAlignment.center,
+//                               children: [
+//                                 Text(
+//                                   "Question ${index + 1} of ${questions.length}",
+//                                   style: TextStyle(color: Colors.black54),
+//                                 ),
+//                                 SizedBox(height: 30),
+//                                 Text(
+//                                   question,
+//                                   textAlign: TextAlign.center,
+//                                   style: TextStyle(
+//                                     fontSize: 22,
+//                                     fontWeight: FontWeight.w700,
+//                                     color: Colors.black87,
+//                                   ),
+//                                 ),
+//                                 SizedBox(height: 24),
+//                                 if (question == "What are your travel dates (start and end)?")
+//                                   Column(
+//                                     children: [
+//                                       _buildDatePickerField("Start Date", 'startDate'),
+//                                       SizedBox(height: 12),
+//                                       _buildDatePickerField("End Date", 'endDate'),
+//                                     ],
+//                                   )
+//                                 else if (predefinedOptions.containsKey(question))
+//                                   _buildDropdownFieldWithOptions(
+//                                       controllers[question]!,
+//                                       predefinedOptions[question]!,
+//                                       "Select an option")
+//                                 else
+//                                   _buildInputField("Your Answer", controllers[question]),
+//                                 SizedBox(height: 40),
+//                                 Row(
+//                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
 //                                   children: [
-//                                     _buildDatePickerField("Start Date", 'startDate'),
-//                                     SizedBox(height: 12),
-//                                     _buildDatePickerField("End Date", 'endDate'),
+//                                     if (index > 0)
+//                                       _navButton("Back", Colors.grey.shade400, () {
+//                                         _pageController.previousPage(
+//                                           duration: Duration(milliseconds: 300),
+//                                           curve: Curves.easeInOut,
+//                                         );
+//                                       }),
+//                                     if (index < questions.length - 1)
+//                                       _navButton("Next", Colors.blueAccent, () async {
+//                                         await _saveResponses();
+//                                         _pageController.nextPage(
+//                                           duration: Duration(milliseconds: 300),
+//                                           curve: Curves.easeInOut,
+//                                         );
+//                                       }),
+//                                     if (index == questions.length - 1)
+//                                       _navButton("Finish", Colors.green, () async {
+//                                         await _saveResponses();
+
+//                                         // ✅ Mark trip as finished
+//                                         if (tripId != null) {
+//                                           await FirebaseFirestore.instance
+//                                               .collection('trips')
+//                                               .doc(tripId!)
+//                                               .update({'status': 'finished'});
+//                                         }
+
+//                                         ScaffoldMessenger.of(context).showSnackBar(
+//                                           SnackBar(content: Text("Trip marked as finished!")),
+//                                         );
+//                                       }),
 //                                   ],
-//                                 )
-//                               else if (predefinedOptions.containsKey(question))
-//                                 _buildDropdownFieldWithOptions(
-//                                     controllers[question]!,
-//                                     predefinedOptions[question]!,
-//                                     "Select an option")
-//                               else
-//                                 _buildInputField("Your Answer", controllers[question]),
-//                               SizedBox(height: 40),
-//                               Row(
-//                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//                                 children: [
-//                                   if (index > 0)
-//                                     _navButton("Back", Colors.grey.shade400, () {
-//                                       _pageController.previousPage(
-//                                         duration: Duration(milliseconds: 300),
-//                                         curve: Curves.easeInOut,
-//                                       );
-//                                     }),
-//                                   if (index < questions.length - 1)
-//                                     _navButton("Next", Colors.blueAccent, () async {
-//                                       await _saveResponses();
-//                                       _pageController.nextPage(
-//                                         duration: Duration(milliseconds: 300),
-//                                         curve: Curves.easeInOut,
-//                                       );
-//                                     }),
-//                                   if (index == questions.length - 1)
-//                                     _navButton("Finish", Colors.green, () async {
-//                                       await _saveResponses();
-//                                       ScaffoldMessenger.of(context).showSnackBar(
-//                                         SnackBar(content: Text("Trip details saved!")),
-//                                       );
-//                                     }),
-//                                 ],
-//                               ),
-//                             ],
+//                                 ),
+//                               ],
+//                             ),
 //                           ),
 //                         ),
-//                       ),
-//                     );
-//                   },
+//                       );
+//                     },
+//                   ),
 //                 ),
-//               ),
-//             ],
+//               ],
+//             ),
 //           ),
 //         ),
 //       ),
@@ -308,43 +371,24 @@
 //     );
 //   }
 
-//   // Widget _buildDropdownFieldWithOptions(
-//   //     TextEditingController controller, List<String> options, String label) {
-//   //   return DropdownButtonFormField<String>(
-//   //     value: controller.text.isEmpty ? null : controller.text,
-//   //     items: options.map((option) {
-//   //       return DropdownMenuItem(value: option, child: Text(option));
-//   //     }).toList(),
-//   //     onChanged: (value) {
-//   //       controller.text = value ?? '';
-//   //     },
-//   //     decoration: InputDecoration(
-//   //       labelText: label,
-//   //       filled: true,
-//   //       fillColor: Colors.white.withOpacity(0.7),
-//   //       border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
-//   //     ),
-//   //   );
-//   // }
-
-// Widget _buildDropdownFieldWithOptions(
+//   Widget _buildDropdownFieldWithOptions(
 //     TextEditingController controller, List<String> options, String label) {
-//   return DropdownButtonFormField<String>(
-//     value: controller.text.isEmpty ? options[0] : controller.text,  // Set default value
-//     items: options.map((option) {
-//       return DropdownMenuItem(value: option, child: Text(option));
-//     }).toList(),
-//     onChanged: (value) {
-//       controller.text = value ?? '';  // Update controller when value changes
-//     },
-//     decoration: InputDecoration(
-//       labelText: label,
-//       filled: true,
-//       fillColor: Colors.white.withOpacity(0.7),
-//       border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
-//     ),
-//   );
-// }
+//     return DropdownButtonFormField<String>(
+//       value: controller.text.isEmpty ? options[0] : controller.text,
+//       items: options.map((option) {
+//         return DropdownMenuItem(value: option, child: Text(option));
+//       }).toList(),
+//       onChanged: (value) {
+//         controller.text = value ?? '';
+//       },
+//       decoration: InputDecoration(
+//         labelText: label,
+//         filled: true,
+//         fillColor: Colors.white.withOpacity(0.7),
+//         border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+//       ),
+//     );
+//   }
 
 //   Widget _navButton(String text, Color color, VoidCallback onPressed) {
 //     return ElevatedButton(
@@ -360,7 +404,6 @@
 //     );
 //   }
 // }
-
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -578,17 +621,18 @@ class _TripPlannerPageState extends State<plantrip4> {
                   actions: [
                     IconButton(
                       icon: const Icon(Icons.edit, color: Colors.black),
-                     onPressed: tripId == null
-    ? null
-    : () async {
-        await Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => EditTripDetailsPage(tripId: tripId!),
-          ),
-        );
-        _loadTripType(); // Reload after editing
-      },
+                      onPressed: tripId == null
+                          ? null
+                          : () async {
+                              await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      EditTripDetailsPage(tripId: tripId!),
+                                ),
+                              );
+                              _loadTripType();
+                            },
                     ),
                   ],
                 ),
@@ -658,8 +702,17 @@ class _TripPlannerPageState extends State<plantrip4> {
                                     if (index == questions.length - 1)
                                       _navButton("Finish", Colors.green, () async {
                                         await _saveResponses();
+
+                                        // ✅ Mark trip as finished
+                                        if (tripId != null) {
+                                          await FirebaseFirestore.instance
+                                              .collection('trips')
+                                              .doc(tripId!)
+                                              .update({'status': 'finished'});
+                                        }
+
                                         ScaffoldMessenger.of(context).showSnackBar(
-                                          SnackBar(content: Text("Trip details saved!")),
+                                          SnackBar(content: Text("Trip marked as finished!")),
                                         );
                                       }),
                                   ],
@@ -699,40 +752,55 @@ class _TripPlannerPageState extends State<plantrip4> {
     );
   }
 
-  Widget _buildDatePickerField(String label, String key) {
-    return TextField(
-      controller: controllers[key],
-      readOnly: true,
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: TextStyle(color: Colors.black87),
-        filled: true,
-        fillColor: Colors.white.withOpacity(0.7),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
-      ),
-      onTap: () async {
-        final pickedDate = await showDatePicker(
-          context: context,
-          initialDate: DateTime.now(),
-          firstDate: DateTime.now(),
-          lastDate: DateTime(2100),
-        );
-        if (pickedDate != null) {
-          controllers[key]?.text = pickedDate.toString().split(' ')[0];
+ Widget _buildDatePickerField(String label, String key) {
+  return TextField(
+    controller: controllers[key],
+    readOnly: true,
+    decoration: InputDecoration(
+      labelText: label,
+      labelStyle: TextStyle(color: Colors.black87),
+      filled: true,
+      fillColor: Colors.white.withOpacity(0.7),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+    ),
+    onTap: () async {
+      final pickedDate = await showDatePicker(
+        context: context,
+        initialDate: DateTime.now(),
+        firstDate: DateTime.now(),
+        lastDate: DateTime(2100),
+      );
+      if (pickedDate != null) {
+        controllers[key]?.text = pickedDate.toString().split(' ')[0];
+
+        // Save responses so far
+        await _saveResponses();
+
+        // Check if both dates are filled
+        final startFilled = controllers['startDate']?.text.isNotEmpty ?? false;
+        final endFilled = controllers['endDate']?.text.isNotEmpty ?? false;
+
+        if (startFilled && endFilled && tripId != null) {
+          await FirebaseFirestore.instance
+              .collection('trips')
+              .doc(tripId!)
+              .update({'status': 'finish'});
         }
-      },
-    );
-  }
+      }
+    },
+  );
+}
+
 
   Widget _buildDropdownFieldWithOptions(
     TextEditingController controller, List<String> options, String label) {
     return DropdownButtonFormField<String>(
-      value: controller.text.isEmpty ? options[0] : controller.text,  // Set default value
+      value: controller.text.isEmpty ? options[0] : controller.text,
       items: options.map((option) {
         return DropdownMenuItem(value: option, child: Text(option));
       }).toList(),
       onChanged: (value) {
-        controller.text = value ?? '';  // Update controller when value changes
+        controller.text = value ?? '';
       },
       decoration: InputDecoration(
         labelText: label,
