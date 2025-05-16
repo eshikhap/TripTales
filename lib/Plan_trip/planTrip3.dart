@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
-import '../email_service.dart'; // Update if needed
+import '../email_service.dart';
 import 'planTrip4.dart';
 
 class SearchFriendsScreen extends StatefulWidget {
