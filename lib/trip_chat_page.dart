@@ -1,3 +1,4 @@
+// All your imports stay unchanged
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -9,6 +10,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
 import 'package:video_player/video_player.dart';
 import 'Plan_trip/EditTripDetailsPage.dart';
+
+final TextEditingController _messageController = TextEditingController();
 
 class TripChatPage extends StatefulWidget {
   final String tripId;
@@ -71,6 +74,7 @@ class _TripChatPageState extends State<TripChatPage> {
         .listen((snapshot) {
       final messages = snapshot.docs.map((doc) {
         final data = doc.data();
+        final timestamp = (data['timestamp'] as Timestamp?)?.millisecondsSinceEpoch;
 
         if (data['type'] == 'text') {
           return types.TextMessage(
@@ -81,7 +85,7 @@ class _TripChatPageState extends State<TripChatPage> {
               imageUrl: data['senderAvatarUrl'],
             ),
             text: data['text'],
-            createdAt: (data['timestamp'] as Timestamp).millisecondsSinceEpoch,
+            createdAt: timestamp,
           );
         } else if (data['type'] == 'image') {
           return types.ImageMessage(
@@ -92,7 +96,7 @@ class _TripChatPageState extends State<TripChatPage> {
               imageUrl: data['senderAvatarUrl'],
             ),
             uri: data['url'],
-            createdAt: (data['timestamp'] as Timestamp).millisecondsSinceEpoch,
+            createdAt: timestamp,
             name: "📷 ${data['caption'] ?? ''}",
             size: 0,
           );
@@ -104,7 +108,7 @@ class _TripChatPageState extends State<TripChatPage> {
               firstName: data['senderName'] ?? '',
               imageUrl: data['senderAvatarUrl'],
             ),
-            createdAt: (data['timestamp'] as Timestamp).millisecondsSinceEpoch,
+            createdAt: timestamp,
             metadata: {
               'type': 'video',
               'url': data['url'],
@@ -112,7 +116,6 @@ class _TripChatPageState extends State<TripChatPage> {
             },
           );
         }
-
         return null;
       }).whereType<types.Message>().toList();
 
@@ -122,22 +125,24 @@ class _TripChatPageState extends State<TripChatPage> {
     });
   }
 
-  void _sendMessage(types.PartialText message) {
-    final messageId = uuid.v4();
-    final user = _auth.currentUser!;
-    _firestore
+  void _sendMessage(types.PartialText message) async {
+    final currentUser = _auth.currentUser;
+    if (currentUser == null) return;
+
+    final messageData = {
+      'text': message.text,
+      'sender': currentUser.uid,
+      'senderName': currentUser.displayName,
+      'senderAvatarUrl': currentUser.photoURL,
+      'timestamp': FieldValue.serverTimestamp(),
+      'type': 'text',
+    };
+
+    await _firestore
         .collection('trips')
         .doc(widget.tripId)
         .collection('chat')
-        .doc(messageId)
-        .set({
-      'sender': user.uid,
-      'senderName': user.displayName,
-      'senderAvatarUrl': user.photoURL,
-      'text': message.text,
-      'type': 'text',
-      'timestamp': FieldValue.serverTimestamp(),
-    });
+        .add(messageData);
   }
 
   Future<void> _pickImage() async {
@@ -163,41 +168,34 @@ class _TripChatPageState extends State<TripChatPage> {
         return AlertDialog(
           title: Text("Send $type?"),
           content: SingleChildScrollView(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(maxHeight: 400),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  type == "image"
-                      ? Image.file(file, width: 200, height: 200, fit: BoxFit.cover)
-                      : AspectRatio(
-                          aspectRatio: 16 / 9,
-                          child: VideoPlayerPreview(file: file),
-                        ),
-                  SizedBox(height: 10),
-                  TextField(
-                    controller: captionController,
-                    decoration: InputDecoration(
-                      hintText: "Add a caption...",
-                      border: OutlineInputBorder(),
-                    ),
+            child: Column(
+              children: [
+                type == "image"
+                    ? Image.file(file, width: 200, height: 200, fit: BoxFit.cover)
+                    : AspectRatio(
+                        aspectRatio: 16 / 9,
+                        child: VideoPlayerPreview(file: file),
+                      ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: captionController,
+                  decoration: const InputDecoration(
+                    hintText: "Add a caption...",
+                    border: OutlineInputBorder(),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text("Cancel"),
-            ),
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
             TextButton(
               onPressed: () async {
-                String caption = captionController.text.trim();
+                final caption = captionController.text.trim();
                 Navigator.pop(context);
                 await _sendMedia(file, type, caption);
               },
-              child: Text("Send"),
+              child: const Text("Send"),
             ),
           ],
         );
@@ -206,55 +204,91 @@ class _TripChatPageState extends State<TripChatPage> {
   }
 
   Future<void> _sendMedia(File file, String type, String caption) async {
-    final String fileName = uuid.v4();
-    final Reference ref = _storage.ref().child('chat_$type/$fileName.${type == "image" ? "jpg" : "mp4"}');
-    await ref.putFile(file);
-    final String fileUrl = await ref.getDownloadURL();
+    try {
+      final fileName = uuid.v4();
+      final ref = _storage.ref().child('chat_$type/$fileName.${type == "image" ? "jpg" : "mp4"}');
+      await ref.putFile(file);
+      final url = await ref.getDownloadURL();
 
-    final user = _auth.currentUser!;
-    final messageId = uuid.v4();
-    await _firestore
-        .collection('trips')
-        .doc(widget.tripId)
-        .collection('chat')
-        .doc(messageId)
-        .set({
-      'sender': user.uid,
-      'senderName': user.displayName,
-      'senderAvatarUrl': user.photoURL,
-      'url': fileUrl,
-      'caption': caption,
-      'type': type,
-      'timestamp': FieldValue.serverTimestamp(),
-    });
+      final user = _auth.currentUser!;
+      await _firestore
+          .collection('trips')
+          .doc(widget.tripId)
+          .collection('chat')
+          .doc(uuid.v4())
+          .set({
+        'sender': user.uid,
+        'senderName': user.displayName,
+        'senderAvatarUrl': user.photoURL,
+        'url': url,
+        'caption': caption,
+        'type': type,
+        'timestamp': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      print("⚠️ Media send error: $e");
+    }
   }
 
   void _handleAttachmentPressed() {
     showModalBottomSheet(
       context: context,
-      builder: (BuildContext context) {
-        return Wrap(
+      builder: (_) => Wrap(
+        children: [
+          ListTile(leading: Icon(Icons.image), title: Text("Select Image"), onTap: () {
+            Navigator.pop(context);
+            _pickImage();
+          }),
+          ListTile(leading: Icon(Icons.videocam), title: Text("Select Video"), onTap: () {
+            Navigator.pop(context);
+            _pickVideo();
+          }),
+        ],
+      ),
+    );
+  }
+
+  void _handleMessageLongPress(BuildContext context, types.Message message) {
+    if (message.author.id != _currentUser.id) return;
+
+    showModalBottomSheet(
+      context: context,
+      builder: (_) => SafeArea(
+        child: Wrap(
           children: [
             ListTile(
-              leading: Icon(Icons.image),
-              title: Text("Select Image"),
-              onTap: () {
+              leading: const Icon(Icons.delete, color: Colors.red),
+              title: const Text("Delete Message", style: TextStyle(color: Colors.red)),
+              onTap: () async {
                 Navigator.pop(context);
-                _pickImage();
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.video_camera_back),
-              title: Text("Select Video"),
-              onTap: () {
-                Navigator.pop(context);
-                _pickVideo();
+                await _deleteMessage(message.id);
               },
             ),
           ],
-        );
-      },
+        ),
+      ),
     );
+  }
+
+  Future<void> _deleteMessage(String messageId) async {
+    final docRef = _firestore.collection('trips').doc(widget.tripId).collection('chat').doc(messageId);
+    final doc = await docRef.get();
+
+    final data = doc.data();
+    if (data != null && (data['type'] == 'image' || data['type'] == 'video')) {
+      final url = data['url'];
+      try {
+        final ref = _storage.refFromURL(url);
+        await ref.delete();
+      } catch (e) {
+        print("⚠️ Storage delete error: $e");
+      }
+    }
+
+    await docRef.delete();
+    setState(() {
+      _messages.removeWhere((msg) => msg.id == messageId);
+    });
   }
 
   @override
@@ -262,34 +296,30 @@ class _TripChatPageState extends State<TripChatPage> {
     if (!_hasAccess) {
       return Scaffold(
         appBar: AppBar(title: const Text("Trip Chat")),
-        body: Center(child: Text("You are not a member of this trip.")),
+        body: const Center(child: Text("You are not a member of this trip.")),
       );
     }
 
     return Scaffold(
-     appBar: AppBar(
-  title: const Text("Trip Chat"),
-  actions: [
-    IconButton(
-      icon: const Icon(Icons.info_outline),
-      tooltip: 'Trip Info',
-      onPressed: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => EditTripDetailsPage(tripId: widget.tripId),
+      appBar: AppBar(
+        title: const Text("Trip Chat"),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.info_outline),
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => EditTripDetailsPage(tripId: widget.tripId)),
+            ),
           ),
-        );
-      },
-    ),
-  ],
-),
+        ],
+      ),
       body: Chat(
         messages: _messages,
         onSendPressed: _sendMessage,
         onAttachmentPressed: _handleAttachmentPressed,
         user: _currentUser,
-        customMessageBuilder: (types.CustomMessage message, {required int messageWidth}) {
+        onMessageLongPress: _handleMessageLongPress,
+        customMessageBuilder: (message, {required int messageWidth}) {
           final meta = message.metadata ?? {};
           if (meta['type'] == 'video' && meta['url'] != null) {
             return Column(
@@ -300,7 +330,7 @@ class _TripChatPageState extends State<TripChatPage> {
                   height: 200,
                   child: VideoPlayerWidget(url: meta['url']),
                 ),
-                if (meta['caption'] != null && (meta['caption'] as String).isNotEmpty)
+                if ((meta['caption'] as String?)?.isNotEmpty ?? false)
                   Padding(
                     padding: const EdgeInsets.only(top: 4.0),
                     child: Text(meta['caption'], style: TextStyle(fontStyle: FontStyle.italic)),
@@ -314,6 +344,7 @@ class _TripChatPageState extends State<TripChatPage> {
     );
   }
 }
+
 class VideoPlayerPreview extends StatefulWidget {
   final File file;
   const VideoPlayerPreview({Key? key, required this.file}) : super(key: key);
@@ -331,9 +362,7 @@ class _VideoPlayerPreviewState extends State<VideoPlayerPreview> {
     super.initState();
     _controller = VideoPlayerController.file(widget.file)
       ..initialize().then((_) {
-        setState(() {
-          _isInitialized = true;
-        });
+        setState(() => _isInitialized = true);
         _controller.play();
       });
   }
@@ -347,14 +376,10 @@ class _VideoPlayerPreviewState extends State<VideoPlayerPreview> {
   @override
   Widget build(BuildContext context) {
     return _isInitialized
-        ? AspectRatio(
-            aspectRatio: _controller.value.aspectRatio,
-            child: VideoPlayer(_controller),
-          )
-        : Center(child: CircularProgressIndicator());
+        ? AspectRatio(aspectRatio: _controller.value.aspectRatio, child: VideoPlayer(_controller))
+        : const Center(child: CircularProgressIndicator());
   }
 }
-
 
 class VideoPlayerWidget extends StatefulWidget {
   final String url;
@@ -373,9 +398,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
     super.initState();
     _controller = VideoPlayerController.network(widget.url)
       ..initialize().then((_) {
-        setState(() {
-          _isInitialized = true;
-        });
+        setState(() => _isInitialized = true);
         _controller.setLooping(true);
         _controller.play();
       });
@@ -390,10 +413,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
   @override
   Widget build(BuildContext context) {
     return _isInitialized
-        ? AspectRatio(
-            aspectRatio: _controller.value.aspectRatio,
-            child: VideoPlayer(_controller),
-          )
-        : Center(child: CircularProgressIndicator());
+        ? AspectRatio(aspectRatio: _controller.value.aspectRatio, child: VideoPlayer(_controller))
+        : const Center(child: CircularProgressIndicator());
   }
 }
