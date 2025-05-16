@@ -21,6 +21,7 @@ class plantrip1 extends StatelessWidget {
   await tripRef.set({
     'tripId': tripId,
     'tripType': tripType,
+    'trip': tripType,
     'creator': userId,
      'members': [userId],
     'timestamp': FieldValue.serverTimestamp(),
@@ -75,7 +76,17 @@ class plantrip1 extends StatelessWidget {
                 },
               ),
               SizedBox(height: 20),
-             
+             RoundedBox(
+                title: "Plan a Trip with AI",
+                icon: Icons.map,
+                onTap: ()async {
+                  await _storeTripSelection("AI trip");
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => plantrip2()),
+                  );
+                },
+              ),
             ],
           ),
         ),
