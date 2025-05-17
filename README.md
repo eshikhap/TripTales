@@ -18,7 +18,7 @@ It empowers users to:
 - Google Maps integration for visual route planning.
 
 ### 📓 Travel Journaling
-- Add text, audio, photos, and video entries.
+- Add text, photos, and video entries.
 - Tag memories by mood, location, or activity.
 - Auto-journal entries from media shared in trip groups.
 
